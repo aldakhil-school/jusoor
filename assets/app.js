@@ -6,6 +6,7 @@ const store = {
   get(k, d) { try { return JSON.parse(localStorage.getItem('jusoor_' + k)) ?? d; } catch { return d; } },
   set(k, v) { try { localStorage.setItem('jusoor_' + k, JSON.stringify(v)); } catch {} }
 };
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]); // نص من الخادم يُعرض نصاً فقط
 const shuffle = a => a.map(v => [Math.random(), v]).sort((x, y) => x[0] - y[0]).map(x => x[1]);
 
 /* ── الأيقونات ── */
@@ -126,7 +127,7 @@ async function loadHome() {
   set('m2', (s.ittala || 0) / fam, AR(s.ittala || 0) + ' أسرة اطّلعت');
   const rows = (s.classes || []).slice(0, 5);
   $('#boardEmpty').hidden = rows.length > 0;
-  $('#board').innerHTML = rows.map((r, i) => `<tr><td class="rank">${AR(i + 1)}</td><td>${r[0]} – شعبة ${AR(r[1])}</td><td style="width:40%"><div class="bar"><i style="width:${Math.min(100, r[2])}%"></i></div></td><td style="width:56px;text-align:left">${AR(Math.round(r[2]))}٪</td></tr>`).join('');
+  $('#board').innerHTML = rows.map((r, i) => `<tr><td class="rank">${AR(i + 1)}</td><td>${esc(r[0])} – شعبة ${AR(+r[1] || 0)}</td><td style="width:40%"><div class="bar"><i style="width:${Math.max(0, Math.min(100, +r[2] || 0))}%"></i></div></td><td style="width:56px;text-align:left">${AR(Math.round(+r[2] || 0))}٪</td></tr>`).join('');
 }
 
 /* ── محرّك مقياس المناخ ── */
