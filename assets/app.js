@@ -40,13 +40,22 @@ function buildOpts(root = document) {
       `<label class="opt"><input type="${multi ? 'checkbox' : 'radio'}" name="${name}" value="${o}" id="o${++uid}"><span>${o}</span></label>`).join('');
   });
 }
+const secList = g => (C.sections[g] || []).map(x => Array.isArray(x) ? x : [x, AR(x)]);
+const secName = (g, s) => { const f = secList(g).find(x => x[0] == s); return f && isNaN(+f[1].replace(/[٠-٩]/g, '1')) && !/^[٠-٩]+$/.test(f[1]) ? f[1] : 'شعبة ' + AR(+s || 0); };
+function fillSections(root) { // قائمة الشعب تتغير حسب الصف المختار
+  const g = root.querySelector('[name=grade]'), s = root.querySelector('[name=section]'); if (!g || !s) return;
+  const keep = s.value, list = secList(g.value);
+  s.innerHTML = `<option value="">${g.value ? 'اختر' : 'اختر الصف أولاً'}</option>` + list.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+  s.disabled = !g.value; if (list.some(x => String(x[0]) === keep)) s.value = keep;
+}
+document.addEventListener('change', e => { if (e.target.name === 'grade' && e.target.closest('.student')) fillSections(e.target.closest('.student')); });
 function studentBlock(prefix) {
-  const g = C.grades.map(x => `<option>${x}</option>`).join(''), s = Array.from({ length: C.sections }, (_, i) => `<option value="${i + 1}">${AR(i + 1)}</option>`).join('');
+  const g = C.grades.map(x => `<option>${x}</option>`).join(''), s = '';
   return `<div class="q" data-req="student"><label for="${prefix}-name">اسم الطالب</label><input class="inp" id="${prefix}-name" name="student" autocomplete="off" placeholder="الاسم الثلاثي"></div>
   <div class="q row2"><div data-req="grade"><label class="ql" for="${prefix}-grade">الصف</label><select class="inp" id="${prefix}-grade" name="grade"><option value="">اختر</option>${g}</select></div>
   <div data-req="section"><label class="ql" for="${prefix}-sec">الشعبة</label><select class="inp" id="${prefix}-sec" name="section"><option value="">اختر</option>${s}</select></div></div>`;
 }
-$$('.student').forEach((el, i) => el.innerHTML = studentBlock('s' + i));
+$$('.student').forEach((el, i) => { el.innerHTML = studentBlock('s' + i); fillSections(el); });
 buildOpts();
 
 function collect(form) {
@@ -57,6 +66,7 @@ function collect(form) {
 function restore(form, data) {
   Object.entries(data || {}).forEach(([k, v]) => form.querySelectorAll(`[name="${k}"]`).forEach(el => {
     if (el.type === 'radio' || el.type === 'checkbox') el.checked = String(v).split('، ').includes(el.value); else el.value = v;
+    if (k === 'grade') { const st = el.closest('.student'); if (st) fillSections(st); }
   }));
 }
 function filled(root, k) {
@@ -127,7 +137,7 @@ async function loadHome() {
   set('m2', (s.ittala || 0) / fam, AR(s.ittala || 0) + ' أسرة اطّلعت');
   const rows = (s.classes || []).slice(0, 5);
   $('#boardEmpty').hidden = rows.length > 0;
-  $('#board').innerHTML = rows.map((r, i) => `<tr><td class="rank">${AR(i + 1)}</td><td>${esc(r[0])} – شعبة ${AR(+r[1] || 0)}</td><td style="width:40%"><div class="bar"><i style="width:${Math.max(0, Math.min(100, +r[2] || 0))}%"></i></div></td><td style="width:56px;text-align:left">${AR(Math.round(+r[2] || 0))}٪</td></tr>`).join('');
+  $('#board').innerHTML = rows.map((r, i) => `<tr><td class="rank">${AR(i + 1)}</td><td>${esc(r[0])} – ${esc(secName(r[0], r[1]))}</td><td style="width:40%"><div class="bar"><i style="width:${Math.max(0, Math.min(100, +r[2] || 0))}%"></i></div></td><td style="width:56px;text-align:left">${AR(Math.round(+r[2] || 0))}٪</td></tr>`).join('');
 }
 
 /* ── محرّك مقياس المناخ ── */
