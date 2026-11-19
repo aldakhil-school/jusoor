@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/app.css?v=10">
+<link rel="stylesheet" href="assets/app.css?v=11">
 <link rel="icon" href="assets/moe-logo.png">
 </head>
 <body>
@@ -273,20 +273,26 @@
   <div class="wrap form-wrap">
     <a class="back" href="#shariq">→ شارك</a>
     <div class="form-head"><span class="eyebrow">مسابقة جسور لأولياء الأمور</span><h1>استثمار لا يُقدّر بثمن</h1>
-      <p class="lead">صوّر فيديو قصيراً (من دقيقة إلى دقيقتين) تحكي فيه كيف تدعم ابنك في جانب أو أكثر: الدراسي، أو الاجتماعي، أو العاطفي، أو الأخلاقي. يكفي التصوير بالجوال بصوت واضح، دون موسيقى أو محتوى منقول، ولا يُنشر أي فيديو إلا بموافقتك. لكل مشارك شهادة شكر إلكترونية، ويُكرَّم أفضل ثلاثة فيديوهات.</p>
+      <p class="lead">صوّر فيديو قصيراً (من دقيقة إلى دقيقتين) تحكي فيه كيف تدعم ابنك في جانب أو أكثر: الدراسي، أو الاجتماعي، أو العاطفي، أو الأخلاقي. يكفي التصوير بالجوال بصوت واضح، دون موسيقى أو محتوى منقول، ولا يُنشر أي فيديو إلا بموافقتك. لكل مشارك شهادة شكر إلكترونية، ويُكرَّم أفضل ثلاثة فيديوهات. وتُرفق ملف الفيديو في النموذج أدناه مباشرة.</p>
       <p class="muted" id="ctDeadline" style="margin-top:8px"></p></div>
     <div class="card bar c3 panel" id="ctClosed" hidden><h2>التسجيل يُفتح قريباً</h2><p class="muted">نعلن موعد المسابقة في رسالة الفصل.</p></div>
     <form class="card bar c3 panel" id="fContest" novalidate>
       <h2>سجّل مشاركتك</h2>
       <div id="ctStu"></div>
+      <div class="q" data-req="parent"><label for="ct-parent">اسم ولي الأمر <span class="hint">(يُكتب في شهادة الشكر)</span></label><input class="inp" id="ct-parent" name="parent" maxlength="80" autocomplete="name"></div>
       <div class="q" data-req="relation"><div class="ql">صلتك بالطالب</div><div class="opts" data-name="relation" data-opts="الأب|الأم|أخرى"></div></div>
       <div class="q" data-req="aspects"><div class="ql">جوانب الدعم في الفيديو <span class="hint">(يمكن اختيار أكثر من إجابة)</span></div><div class="opts" data-name="aspects" data-multi="1" data-opts="الدراسي|الاجتماعي|العاطفي|الأخلاقي"></div></div>
       <div class="q"><label for="ct-title">عنوان الفيديو <span class="hint">(اختياري)</span></label><input class="inp" id="ct-title" name="title" maxlength="120" autocomplete="off"></div>
+      <div class="q" data-req="vfile" id="ctFileQ"><label for="ct-file">إرفاق ملف الفيديو</label>
+        <label class="filepick" for="ct-file"><span data-ic="camera"></span><b id="ctFileName">اضغط هنا لاختيار الفيديو من جوالك</b><small id="ctFileInfo">فيديو واحد، حتى ١٠٠ ميجا (قرابة دقيقتين بجودة الجوال العادية)</small></label>
+        <input type="file" id="ct-file" name="vfile" accept="video/*" class="file-hidden"></div>
       <div class="q" data-req="consent"><div class="ql">هل توافق على عرض الفيديو المرفق في قنوات المدرسة إن اختير؟</div><div class="opts" data-name="consent" data-opts="نعم|لا"></div></div>
+      <div class="upwrap" id="ctUp" hidden><div class="upbar"><i id="ctBar"></i></div><div class="uptxt" id="ctUpTxt"></div><p class="muted" style="font-size:13px">لا تغلق الصفحة حتى يكتمل الرفع.</p></div>
       <div class="err" id="ctErr"></div>
-      <div class="form-nav"><span></span><button class="btn" type="submit">تسجيل المشاركة</button></div>
+      <div class="form-nav"><span></span><button class="btn" type="submit" id="ctBtn">إرسال المشاركة والفيديو</button></div>
+      <div class="privacy"><span class="lk" data-ic="lock"></span>الفيديو يُحفظ في مجلد خاص بالمدرسة، ولا يُنشر إلا بموافقتك.</div>
     </form>
-    <div class="card bar panel done" id="ctDone" hidden><div class="plank"></div><h1>تم تسجيل مشاركتك</h1><p id="ctSubmit"></p><div class="cta"><a class="btn" href="#shariq">شارك</a></div></div>
+    <div class="card bar panel done" id="ctDone" hidden><div class="plank"></div><h1 id="ctDoneH">تم تسجيل مشاركتك</h1><p id="ctSubmit"></p><div class="cta"><a class="btn" href="#shariq">شارك</a></div></div>
   </div>
 </section>
 <!-- ═════════ بنك خبرات الآباء ═════════ -->
@@ -357,9 +363,9 @@
   </div>
 </footer>
 
-<script src="config.js?v=9"></script>
+<script src="config.js?v=10"></script>
 <script src="assets/climate.js"></script>
-<script src="assets/phases.js?v=3"></script>
+<script src="assets/phases.js?v=4"></script>
 <script src="assets/app.js?v=13"></script>
 </body>
 </html>
