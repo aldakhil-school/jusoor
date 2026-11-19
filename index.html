@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/app.css?v=11">
+<link rel="stylesheet" href="assets/app.css?v=12">
 <link rel="icon" href="assets/moe-logo.png">
 </head>
 <body>
@@ -273,7 +273,8 @@
   <div class="wrap form-wrap">
     <a class="back" href="#shariq">→ شارك</a>
     <div class="form-head"><span class="eyebrow">مسابقة جسور لأولياء الأمور</span><h1>استثمار لا يُقدّر بثمن</h1>
-      <p class="lead">صوّر فيديو قصيراً (من دقيقة إلى دقيقتين) تحكي فيه كيف تدعم ابنك في جانب أو أكثر: الدراسي، أو الاجتماعي، أو العاطفي، أو الأخلاقي. يكفي التصوير بالجوال بصوت واضح، دون موسيقى أو محتوى منقول، ولا يُنشر أي فيديو إلا بموافقتك. لكل مشارك شهادة شكر إلكترونية، ويُكرَّم أفضل ثلاثة فيديوهات. وتُرفق ملف الفيديو في النموذج أدناه مباشرة.</p>
+      <p class="lead">صوّر فيديو قصيراً (من دقيقة إلى دقيقتين) تحكي فيه كيف تدعم ابنك في جانب أو أكثر: الدراسي، أو الاجتماعي، أو العاطفي، أو الأخلاقي. يكفي التصوير بالجوال بصوت واضح، دون موسيقى أو محتوى منقول، ولا يُنشر أي فيديو إلا بموافقتك. المشاركة ملف فيديو واحد فقط (ليست صوراً ولا نصاً)، تُرفقه في النموذج أدناه مباشرة. ولكل مشارك شهادة شكر إلكترونية يحفظها فور إرسال الفيديو، ويُكرَّم أفضل ثلاثة فيديوهات.</p>
+      <a class="card more-row ct-how" href="#v-musabaqa"><span class="tile t3" data-ic="play"></span><div><b>شاهد شرح المسابقة</b><small>ماذا تصوّر، وكيف ترفع الفيديو خطوة بخطوة</small></div><i>‹</i></a>
       <p class="muted" id="ctDeadline" style="margin-top:8px"></p></div>
     <div class="card bar c3 panel" id="ctClosed" hidden><h2>التسجيل يُفتح قريباً</h2><p class="muted">نعلن موعد المسابقة في رسالة الفصل.</p></div>
     <form class="card bar c3 panel" id="fContest" novalidate>
@@ -292,7 +293,9 @@
       <div class="form-nav"><span></span><button class="btn" type="submit" id="ctBtn">إرسال المشاركة والفيديو</button></div>
       <div class="privacy"><span class="lk" data-ic="lock"></span>الفيديو يُحفظ في مجلد خاص بالمدرسة، ولا يُنشر إلا بموافقتك.</div>
     </form>
-    <div class="card bar panel done" id="ctDone" hidden><div class="plank"></div><h1 id="ctDoneH">تم تسجيل مشاركتك</h1><p id="ctSubmit"></p><div class="cta"><a class="btn" href="#shariq">شارك</a></div></div>
+    <div class="card bar panel done" id="ctDone" hidden><div class="plank"></div><h1 id="ctDoneH">تم تسجيل مشاركتك</h1><p id="ctSubmit"></p>
+      <div class="cert" id="ctCert" hidden><img id="ctCertImg" alt="شهادة الشكر باسمك"><button class="btn" type="button" id="ctCertSave"><span data-ic="download"></span>حفظ الشهادة في جوالك</button></div>
+      <div class="cta"><a class="btn ghost" href="#next">خطوتك التالية</a></div></div>
   </div>
 </section>
 <!-- ═════════ بنك خبرات الآباء ═════════ -->
@@ -363,9 +366,9 @@
   </div>
 </footer>
 
-<script src="config.js?v=10"></script>
+<script src="config.js?v=11"></script>
 <script src="assets/climate.js"></script>
-<script src="assets/phases.js?v=4"></script>
+<script src="assets/phases.js?v=5"></script>
 <script src="assets/app.js?v=13"></script>
 </body>
 </html>
