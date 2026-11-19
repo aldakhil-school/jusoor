@@ -26,8 +26,13 @@ const IC = {
   lock:'<rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
   route:'<circle cx="6" cy="19" r="3"/><path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"/><circle cx="18" cy="5" r="3"/>',
   check:'<path d="M20 6 9 17l-5-5"/>',
+  star:'<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
   download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/>'
 };
+/* ── المرحلة الحالية: العناصر ذات data-phase="3" تظهر من المرحلة ٣، و"2-2" في المرحلة ٢ فقط ── */
+const PH = C.phase || 1;
+$$('[data-phase]').forEach(e => { const [a, b] = e.dataset.phase.split('-').map(Number); if (PH < a || (b && PH > b)) e.remove(); });
+{ const tb = $('.tabbar'); if (tb) tb.style.setProperty('--tabs', tb.children.length); }
 $$('[data-ic]').forEach(e => e.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${IC[e.dataset.ic] || ''}</svg>`);
 
 /* ── عناصر النماذج ── */
@@ -55,7 +60,11 @@ function studentBlock(prefix) {
   <div class="q row2"><div data-req="grade"><label class="ql" for="${prefix}-grade">الصف</label><select class="inp" id="${prefix}-grade" name="grade"><option value="">اختر</option>${g}</select></div>
   <div data-req="section"><label class="ql" for="${prefix}-sec">الشعبة</label><select class="inp" id="${prefix}-sec" name="section"><option value="">اختر</option>${s}</select></div></div>`;
 }
-$$('.student').forEach((el, i) => { el.innerHTML = studentBlock('s' + i); fillSections(el); });
+function applyPreset(root) { // من رابط الفصل #c-<الصف>-<الشعبة>
+  const p = store.get('preset', null), g = root.querySelector('[name=grade]'); if (!p || !g || g.value) return;
+  g.value = p.grade; fillSections(root); const s = root.querySelector('[name=section]'); if (s) s.value = String(p.section);
+}
+$$('.student').forEach((el, i) => { el.innerHTML = studentBlock('s' + i); fillSections(el); applyPreset(el); });
 buildOpts();
 
 function collect(form) {
@@ -94,6 +103,7 @@ async function stats() {
   if (!C.api) {
     const d = store.get('demo', []);
     return { demo: true, families: C.families, participants: 268 + d.filter(r => r.form === 'needs').length, ittala: 231, climate: 412, satisfaction: 84, needs: 174,
+      tawjih: { families: 143, union: 260, views: 388 }, experts: 23, contest: 17, pulse: {}, pulseTotal: 96, sat_pre: 84, sat_post: 89, n_post: 120,
       classes: [['الثالث الثانوي', 2, 71], ['الثاني الثانوي', 4, 64], ['الأول الثانوي', 1, 58], ['الثالث الثانوي', 5, 52], ['الثاني الثانوي', 1, 47]] };
   }
   const r = await fetch(C.api + '?action=stats'); return r.json();
@@ -120,10 +130,20 @@ function drawBridge(rate) {
   requestAnimationFrame(() => svg.querySelectorAll('rect[style]').forEach(r => r.style.opacity = 1));
 }
 let homeDrawn = false;
-async function loadHome() {
+/* خطوتك التالية: زر واحد يتغير حسب حال الأسرة، فلا يحتاج ولي الأمر أن يبحث في القوائم */
+function nextStep() {
   const inProg = J.started || J.st > 0 || Object.keys(J.quiz).length;
-  const [lbl, href] = done && !inProg ? ['بطاقة شريك جسور', '#card'] : inProg ? ['أكمل رحلتك في جسور', '#rihla'] : ['ابدأ رحلتك في جسور', '#rihla'];
-  $('#heroGo').textContent = lbl; $('#heroGo').href = href; $('#homeGo').textContent = inProg ? 'أكمل الرحلة' : done ? 'رحلة لابن آخر' : 'ابدأ الرحلة';
+  if (inProg) return ['أكمل رحلتك في جسور', '#rihla', 'توقفت في منتصف الرحلة، وتقدّمك محفوظ'];
+  if (!done) return ['ابدأ رحلتك في جسور', '#rihla', 'خمس دقائق: فيديو قصير وأسئلة سريعة'];
+  const v = ext?.nextVideo?.();
+  if (v) return ['شاهد: ' + v.title.split(':')[0], '#v-' + v.id, `فيديو ${AR(v.k)} من ${AR(v.T)} في جسرك الشخصي، قرابة دقيقة ونصف`];
+  if (ext?.pulsePending?.()) return ['أجب عن سؤال الأسبوع', '#shariq', 'ثوانٍ فقط، والنتيجة تظهر فوراً'];
+  return ext?.card?.()?.gold ? ['بطاقتك الذهبية', '#card', 'أكملت كل ما هو متاح الآن، شكراً لك'] : ['بطاقة شريك جسور', '#card', 'أكملت رحلتك، شكراً لك'];
+}
+const setNext = () => { const n = nextStep(); $$('.go-next').forEach(a => a.href = n[1]); return n; };
+async function loadHome() {
+  const inProg = J.started || J.st > 0 || Object.keys(J.quiz).length, [lbl, href, sub] = setNext();
+  $('#heroGo').textContent = lbl; $('#heroGo').href = href; $('#heroSub').textContent = sub; $('#homeGo').textContent = inProg ? 'أكمل الرحلة' : done ? 'رحلة لابن آخر' : 'ابدأ الرحلة';
   if (!homeDrawn) { drawBridge(0); homeDrawn = true; }
   let s; try { s = await stats(); } catch { s = null; }
   if (!s) return;
@@ -137,6 +157,7 @@ async function loadHome() {
   set('m2', (s.ittala || 0) / fam, AR(s.ittala || 0) + ' أسرة اطّلعت');
   const rows = (s.classes || []).slice(0, 5);
   $('#boardEmpty').hidden = rows.length > 0;
+  ext?.home(s);
   $('#board').innerHTML = rows.map((r, i) => `<tr><td class="rank">${AR(i + 1)}</td><td>${esc(r[0])} – ${esc(secName(r[0], r[1]))}</td><td style="width:40%"><div class="bar"><i style="width:${Math.max(0, Math.min(100, +r[2] || 0))}%"></i></div></td><td style="width:56px;text-align:left">${AR(Math.round(+r[2] || 0))}٪</td></tr>`).join('');
 }
 
@@ -154,7 +175,7 @@ function climate(o) {
     const g = C.grades.map(x => `<option>${x}</option>`).join('');
     const sel = (n, l, opts) => `<div class="q" data-req="${n}"><label class="ql" for="ci-${n}">${l}</label><select class="inp" id="ci-${n}" name="${n}"><option value="">اختر</option>${opts}</select></div>`;
     const yrs = ['أقل من سنة', '١–٥ سنوات', '٦–١٠ سنوات', 'أكثر من ١٠ سنوات'].map(x => `<option>${x}</option>`).join('');
-    return o.role === 'student' ? sel('grade', 'صفك', g) : sel('years', 'سنوات العمل في هذه المدرسة', yrs);
+    return o.role === 'student' ? sel('grade', 'صفك', g) : o.role === 'parent' ? sel('grade', 'صف ابنك', g) : sel('years', 'سنوات العمل في هذه المدرسة', yrs);
   }
   const item = (key, num, text, cls = '') => `<div class="q likert${cls}" data-req="${key}"><div class="st"><b>${AR(num)}</b><span>${text}</span></div><div class="scale">` +
     LIK.map((l, j) => `<label class="opt"><input type="radio" name="${key}" value="${5 - j}" ${s.ans[key] == 5 - j ? 'checked' : ''}><span>${l}</span></label>`).join('') + `</div></div>`;
@@ -188,6 +209,7 @@ function climate(o) {
     prev() { return false; }
   };
 }
+const WAVE = () => PH >= 4 ? { wave: 'بعدي' } : {}; // القياس البعدي في مرحلة التقييم
 const positive = ans => { const v = Object.values(ans); return v.length ? Math.round(v.filter(x => x >= 4).length / v.length * 100) : 0; };
 
 /* ══════════ رحلتك في جسور ══════════ */
@@ -335,11 +357,11 @@ $('#jNext').addEventListener('click', async () => {
   const it = { ...stu, relation: n.relation, expert: n.expert || '', q1: J.quiz.q1, q2: J.quiz.q2, q3: J.quiz.q3, score, passed: score >= 2 ? 'نعم' : 'لا', watched: Math.round(J.watched) };
   const nd = { ...n }; ['relation', 'expert'].forEach(k => delete nd[k]);
   try {
-    await Promise.all([send('ittala', it), send('climate', { role: ROLE.parent, grade: n.grade, positive: positive(J.c.ans), ...J.c.ans }), send('needs', nd)]);
+    await Promise.all([send('ittala', it), send('climate', { role: ROLE.parent, grade: n.grade, positive: positive(J.c.ans), ...WAVE(), ...J.c.ans }), send('needs', nd)]);
   } catch {
     btn.disabled = false; btn.textContent = 'إرسال وإكمال الرحلة'; err.textContent = 'تعذّر الإرسال. تحقّق من الاتصال بالإنترنت ثم حاول مرة أخرى، وإجاباتك محفوظة.'; return;
   }
-  done = { grade: n.grade, student: n.student, at: Date.now() }; store.set('jdone', done);
+  done = { grade: n.grade, student: n.student, at: Date.now() }; store.set('jdone', done); store.set('family', stu);
   const c = J.c; J = J0(); Object.assign(c, { step: 1, ans: {}, info: {} }); J.c = c; saveJ(); // نفس كائن المقياس المرتبط بالمحرّك
   fN.reset(); $('#mInfo').hidden = true; btn.disabled = false;
   location.hash = 'card';
@@ -350,6 +372,7 @@ $('#jAgain').addEventListener('click', () => { J = J0(); J.started = true; saveJ
 const loadImg = src => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
 let cardBlob = null;
 async function makeCard(showName) {
+  const P = ext?.card?.() || null, gold = !!(P && P.gold), D = done || store.get('family', null);
   await Promise.all(['700 120px "Readex Pro"', '600 44px "Readex Pro"', '500 34px "IBM Plex Sans Arabic"', '400 28px "IBM Plex Sans Arabic"'].map(f => document.fonts.load(f).catch(() => {})));
   const W = 1080, H = 1350, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
   const x = cv.getContext('2d'); x.direction = 'rtl';
@@ -358,8 +381,8 @@ async function makeCard(showName) {
   g = x.createRadialGradient(100, 1300, 0, 100, 1300, 700); g.addColorStop(0, 'rgba(18,168,122,.22)'); g.addColorStop(1, 'rgba(18,168,122,0)'); x.fillStyle = g; x.fillRect(0, 0, W, H);
   x.fillStyle = 'rgba(255,255,255,.06)'; for (let i = 20; i < W; i += 34) for (let j = 20; j < H; j += 34) { x.beginPath(); x.arc(i, j, 1.4, 0, 7); x.fill(); }
   // إطار
-  x.strokeStyle = 'rgba(255,255,255,.14)'; x.lineWidth = 2; x.beginPath(); x.roundRect(36, 36, W - 72, H - 72, 40); x.stroke();
-  g = x.createLinearGradient(0, 0, W, 0); g.addColorStop(0, '#e9b872'); g.addColorStop(.45, '#6ec6e6'); g.addColorStop(1, '#3ecf8e');
+  x.strokeStyle = gold ? 'rgba(233,184,114,.75)' : 'rgba(255,255,255,.14)'; x.lineWidth = gold ? 4 : 2; x.beginPath(); x.roundRect(36, 36, W - 72, H - 72, 40); x.stroke();
+  g = x.createLinearGradient(0, 0, W, 0); if (gold) { g.addColorStop(0, '#d9894f'); g.addColorStop(.5, '#f6d58e'); g.addColorStop(1, '#e9b872'); } else { g.addColorStop(0, '#e9b872'); g.addColorStop(.45, '#6ec6e6'); g.addColorStop(1, '#3ecf8e'); }
   x.fillStyle = g; x.beginPath(); x.roundRect(120, 34, W - 240, 6, 3); x.fill();
   // الهوية
   try { const logo = await loadImg('assets/moe-logo-white.png'); const lh = 104, lw = lh * logo.width / logo.height; x.drawImage(logo, W - 96 - lw, 92, lw, lh);
@@ -367,7 +390,7 @@ async function makeCard(showName) {
     x.textAlign = 'right'; x.fillStyle = '#fff'; x.font = '600 44px "Readex Pro"'; x.fillText(C.school, W - 96 - lw - 64, 140);
     x.fillStyle = '#9dbccb'; x.font = '400 28px "IBM Plex Sans Arabic"'; x.fillText('الإدارة العامة للتعليم بمحافظة جدة', W - 96 - lw - 64, 184); } catch {}
   // الجسر
-  const deck = 560, x0 = 150, x1 = 930, span = (x1 - x0) / 3, N = 36, w = (x1 - x0) / N, cols = ['#3ecf8e', '#6ec6e6', '#e9b872'];
+  const deck = 560, x0 = 150, x1 = 930, span = (x1 - x0) / 3, N = 36, w = (x1 - x0) / N, cols = gold ? ['#f6d58e', '#e9b872', '#d9894f'] : ['#3ecf8e', '#6ec6e6', '#e9b872'];
   for (let k = 0; k < 3; k++) { const a = x0 + k * span; x.strokeStyle = cols[2 - k]; x.lineWidth = 9; x.lineCap = 'round'; x.beginPath(); x.moveTo(a, deck); x.quadraticCurveTo(a + span / 2, deck - 300, a + span, deck); x.stroke(); }
   for (let i = 0; i < N; i++) {
     const px = x1 - (i + 1) * w, cx = px + w / 2, t = ((cx - x0) % span) / span, top = deck - 2 * t * (1 - t) * 300;
@@ -378,21 +401,21 @@ async function makeCard(showName) {
   x.strokeStyle = 'rgba(110,198,230,.3)'; x.setLineDash([10, 14]); x.lineWidth = 3; x.beginPath(); x.moveTo(90, deck + 104); x.lineTo(W - 90, deck + 104); x.stroke(); x.setLineDash([]);
   // النص
   x.textAlign = 'center';
-  g = x.createLinearGradient(260, 0, 820, 0); g.addColorStop(0, '#6ec6e6'); g.addColorStop(1, '#3ecf8e');
-  x.fillStyle = g; x.font = '700 124px "Readex Pro"'; x.fillText('شريك جسور', W / 2, 840);
+  g = x.createLinearGradient(260, 0, 820, 0); if (gold) { g.addColorStop(0, '#f6d58e'); g.addColorStop(1, '#d9894f'); } else { g.addColorStop(0, '#6ec6e6'); g.addColorStop(1, '#3ecf8e'); }
+  x.fillStyle = g; x.font = gold ? '700 104px "Readex Pro"' : '700 124px "Readex Pro"'; x.fillText(gold ? 'شريك جسور الذهبي' : 'شريك جسور', W / 2, 840);
   x.fillStyle = '#fff'; x.font = '500 40px "IBM Plex Sans Arabic"';
-  const gr = done?.grade ? 'الصف ' + done.grade : '';
-  if (showName && done?.student) { x.fillText('ولي أمر الطالب: ' + done.student, W / 2, 930); x.fillStyle = '#cfe3ec'; x.font = '400 34px "IBM Plex Sans Arabic"'; x.fillText(gr, W / 2, 984); }
+  const gr = D?.grade ? 'الصف ' + D.grade : '';
+  if (showName && D?.student) { x.fillText('ولي أمر الطالب: ' + D.student, W / 2, 930); x.fillStyle = '#cfe3ec'; x.font = '400 34px "IBM Plex Sans Arabic"'; x.fillText(gr, W / 2, 984); }
   else x.fillText('ولي أمر طالب في ' + (gr || 'المدرسة'), W / 2, 950);
-  x.fillStyle = '#cfe3ec'; x.font = '400 32px "IBM Plex Sans Arabic"'; x.fillText('أكمل رحلته في مبادرة جسور ١٤٤٨هـ', W / 2, 1050);
+  x.fillStyle = '#cfe3ec'; x.font = '400 32px "IBM Plex Sans Arabic"'; x.fillText(gold ? (done ? 'أكمل رحلته وفيديوهات التوجيه الأسري كلها ١٤٤٨هـ' : 'أكمل فيديوهات التوجيه الأسري كلها ١٤٤٨هـ') : 'أكمل رحلته في مبادرة جسور ١٤٤٨هـ', W / 2, 1050);
   // الشارات
-  const badges = ['اطّلع', 'مقياس المناخ', 'الاحتياجات'], bc = ['rgba(62,207,142,', 'rgba(110,198,230,', 'rgba(233,184,114,'];
+  const badges = (done ? ['اطّلع', 'مقياس المناخ', 'الاحتياجات'] : []).concat(P && P.n ? [`التوجيه ${AR(P.n)}/${AR(P.T)}`] : []), bc = ['rgba(62,207,142,', 'rgba(110,198,230,', 'rgba(233,184,114,', 'rgba(246,213,142,'];
   x.font = '500 28px "IBM Plex Sans Arabic"';
   const bw = badges.map(b => x.measureText('✓ ' + b).width + 56), tot = bw.reduce((a, b) => a + b, 0) + 24 * 2;
   let bx = W / 2 + tot / 2;
   badges.forEach((b, i) => { const ww = bw[i]; bx -= ww; x.fillStyle = bc[i] + '.16)'; x.strokeStyle = bc[i] + '.6)'; x.lineWidth = 2; x.beginPath(); x.roundRect(bx, 1100, ww, 58, 29); x.fill(); x.stroke(); x.fillStyle = '#fff'; x.fillText('✓ ' + b, bx + ww / 2, 1139); bx -= 24; });
   // التاريخ والختام
-  let date = ''; try { date = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-arab', { day: 'numeric', month: 'long', year: 'numeric' }).format(done?.at || Date.now()); } catch {}
+  let date = ''; try { date = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-arab', { day: 'numeric', month: 'long', year: 'numeric' }).format(D?.at || Date.now()); } catch {}
   x.fillStyle = '#3ecf8e'; x.font = '600 34px "Readex Pro"'; x.fillText('نبني علاقات.. نصنع مستقبلاً', W / 2, 1232);
   x.fillStyle = '#9dbccb'; x.font = '400 24px "IBM Plex Sans Arabic"'; x.fillText(date, W / 2, 1276);
   return new Promise(r => cv.toBlob(r, 'image/png'));
@@ -433,7 +456,7 @@ $('#kNext').addEventListener('click', async () => {
   const r = ck.next($('#kErr')); if (!r) return;
   if (r === 'moved') { kNav(); $('#f-climate').scrollIntoView({ behavior: 'smooth' }); return; }
   const btn = $('#kNext'); btn.disabled = true;
-  try { await send('climate', { role: ROLE[kRole], ...kState.info, positive: positive(kState.ans), ...kState.ans }); }
+  try { await send('climate', { role: ROLE[kRole], ...kState.info, positive: positive(kState.ans), ...WAVE(), ...kState.ans }); }
   catch { btn.disabled = false; $('#kErr').textContent = 'تعذّر الإرسال. تحقّق من الاتصال ثم حاول مرة أخرى.'; return; }
   btn.disabled = false; $('#f-climate').hidden = true; $('#kDone').hidden = false; window.scrollTo(0, 0);
 });
@@ -445,8 +468,12 @@ function route() {
   // روابط مباشرة: #students للطلاب، #staff للمعلمين والإداريين
   const aud = p === 'students' ? 'student' : p === 'staff' ? 'staff' : null;
   if (aud) p = 'climate';
-  if (p === 'card' && !done) p = 'rihla';
-  const id = $('#p-' + p) ? p : 'home', nav = id === 'card' ? 'rihla' : id;
+  const cm = p.match(/^c-([1-3])-(\d{1,2})$/); // رابط الفصل من رائد الفصل
+  if (cm) { store.set('preset', { grade: C.grades[+cm[1] - 1], section: +cm[2] }); $$('.student').forEach(applyPreset); location.replace('#home'); return; }
+  if (p === 'next') { location.replace(setNext()[1]); return; }
+  const raw = p; if (p.indexOf('v-') === 0) p = 'videos';
+  if (p === 'card' && !done && !ext?.card?.()?.gold) p = 'rihla';
+  const id = $('#p-' + p) ? p : 'home', nav = id === 'home' ? 'home' : id === 'more' ? 'more' : 'next';
   $$('section.page').forEach(s => s.classList.toggle('on', s.id === 'p-' + id));
   $$('[data-nav]').forEach(a => { const on = a.dataset.nav === nav; a.classList.toggle('on', on); on ? a.setAttribute('aria-current', 'page') : a.removeAttribute('aria-current'); });
   if (id === 'home') loadHome();
@@ -457,8 +484,10 @@ function route() {
     $$('.role[data-r]').forEach(r => r.hidden = !!aud && r.dataset.r !== aud);
     if (aud === 'student' && $('#f-climate').hidden) $('.role[data-role=student]').click();
   }
+  ext?.onRoute(id, raw); setNext();
   if (id !== 'rihla' && !vid.paused) vid.pause();
   window.scrollTo(0, 0);
 }
+const ext = window.JUSOOR_EXT ? window.JUSOOR_EXT({ C, $, $$, AR, esc, shuffle, store, send, stats, studentBlock, fillSections, buildOpts, collect, restore, validate, IC }) : null;
 addEventListener('hashchange', route); route();
 })();
