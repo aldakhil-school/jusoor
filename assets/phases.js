@@ -154,14 +154,59 @@ function contestPage() {
   $('#ctDeadline').textContent = k.deadline ? `آخر موعد للمشاركة: ${k.deadline}` : 'يُعلن آخر موعد للمشاركة قريباً.';
   $('#ctSubmit').innerHTML = esc(k.submit || 'تصلك طريقة إرسال الفيديو من المدرسة بعد التسجيل.');
   if (!k.open) { f.hidden = true; $('#ctClosed').hidden = false; return; }
+  const UP = k.upload !== false, MAX = (k.maxMB || 100) * 1048576, fileIn = $('#ct-file');
+  if (!UP) { $('#ctFileQ').remove(); $('#ctBtn').textContent = 'تسجيل المشاركة'; }
+  else { $('#ctSubmit').textContent = 'وصلنا الفيديو، شكراً لك. تصلك شهادة الشكر الإلكترونية بعد مراجعته.'; $('#ctDoneH').textContent = 'وصلت مشاركتك والفيديو'; }
   studentArea($('#ctStu'), 'ct'); buildOpts(f);
-  if (store.get('contest', null)) { f.hidden = true; $('#ctDone').hidden = false; }
+  f.querySelectorAll('[data-ic]').forEach(e => e.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${api.IC[e.dataset.ic] || ''}</svg>`);
+  const prev = store.get('contest', null); // من سجّل ولم يكتمل رفع الفيديو يرجع له النموذج
+  if (prev && (prev.video || !UP)) { f.hidden = true; $('#ctDone').hidden = false; }
+  const mb = b => AR((b / 1048576).toFixed(1)).replace('.', '٫') + ' ميجا';
+  fileIn?.addEventListener('change', () => {
+    const fl = fileIn.files[0]; $('#ctFileQ').classList.remove('miss'); $('#ctErr').textContent = '';
+    $('#ctFileName').textContent = fl ? fl.name : 'اضغط هنا لاختيار الفيديو من جوالك';
+    $('#ctFileInfo').textContent = !fl ? '' : !/^video\//.test(fl.type) ? 'هذا الملف ليس فيديو، اختر ملف فيديو.' : fl.size > MAX ? `حجمه ${mb(fl.size)}، والحد ١٠٠ ميجا. صوّره بجودة أقل أو اختصره.` : `الحجم ${mb(fl.size)}، جاهز للإرسال ✓`;
+  });
+  // الإرسال بقراءة الرد (للحصول على رمز الرفع)، ثم الرفع على أجزاء مع استئناف عند الانقطاع
+  const call = o => fetch(C.api, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(o) }).then(r => r.json());
+  const b64 = blob => new Promise((ok, no) => { const r = new FileReader(); r.onload = () => ok(String(r.result).split(',')[1] || ''); r.onerror = no; r.readAsDataURL(blob); });
+  const prog = (p, t) => { $('#ctUp').hidden = false; $('#ctBar').style.width = Math.round(p * 100) + '%'; $('#ctUpTxt').textContent = t; };
+  const ERR = { file: 'الملف ليس فيديو أو أكبر من ١٠٠ ميجا.', busy: 'وصل عدد الفيديوهات اليوم إلى الحد. حاول غداً، ومشاركتك محفوظة.', token: 'انتهت مهلة الرفع. أعد إرسال المشاركة.' };
+  let up = null; // رمز الرفع بعد تسجيل المشاركة، يبقى للاستئناف
+  async function uploadFile(fl) {
+    if (!C.api) { for (let i = 1; i <= 20; i++) { await new Promise(r => setTimeout(r, 120)); prog(i / 20, `جارٍ رفع الفيديو… ${AR(i * 5)}٪ (تجربة)`); } return true; }
+    const st = await call({ form: 'upload_start', up, size: fl.size, type: fl.type });
+    if (!st.ok) throw new Error(st.err || 'drive');
+    let off = st.offset || 0, tries = 0;
+    while (off < fl.size) {
+      prog(off / fl.size, `جارٍ رفع الفيديو… ${AR(Math.floor(off / fl.size * 100))}٪`);
+      let r; try { r = await call({ form: 'upload_chunk', up, offset: off, data: await b64(fl.slice(off, off + st.chunk)) }); } catch { r = null; }
+      if (r && r.ok) { tries = 0; if (r.done) break; off = r.offset; continue; }
+      if (r && r.offset != null && r.err === 'order') { off = r.offset; continue; }
+      if (++tries > 3) throw new Error(r && r.err || 'net');
+      await new Promise(x => setTimeout(x, 1500 * tries));
+    }
+    prog(1, 'اكتمل رفع الفيديو ✓'); return true;
+  }
   f.addEventListener('submit', async e => {
-    e.preventDefault(); const box = $('#ctStu'), err = $('#ctErr');
-    if (!validate(f, err)) return;
-    const n = collect(f), stu = stuOf(box, f), btn = f.querySelector('button[type=submit]'); btn.disabled = true;
-    try { await send('contest', { ...stu, relation: n.relation, aspects: n.aspects, title: n.title || '', consent: n.consent }); } catch { btn.disabled = false; return sendErr(err); }
-    keepFam(stu); store.set('contest', { at: Date.now() }); f.hidden = true; $('#ctDone').hidden = false; $('#ctDone').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    e.preventDefault(); const box = $('#ctStu'), err = $('#ctErr'), btn = $('#ctBtn'), fl = UP ? fileIn.files[0] : null;
+    if (!up && !validate(f, err)) return;
+    if (UP && (!fl || !/^video\//.test(fl.type) || fl.size > MAX)) { $('#ctFileQ').classList.add('miss'); err.textContent = !fl ? 'أرفق ملف الفيديو.' : ERR.file; return; }
+    const n = collect(f), stu = stuOf(box, f); btn.disabled = true; err.textContent = '';
+    try {
+      if (!up) {
+        const row = { ...stu, parent: n.parent, relation: n.relation, aspects: n.aspects, title: n.title || '', consent: n.consent };
+        if (!C.api || !UP) { await send('contest', row); up = 'demo'; }
+        else { prog(0, 'جارٍ تسجيل المشاركة…'); const r = await call({ form: 'contest', at: new Date().toISOString(), ...row }); if (!r.ok || !r.up) throw new Error(r.busy ? 'busy' : 'reg'); up = r.up; }
+        keepFam(stu); store.set('contest', { at: Date.now(), video: false });
+      }
+      if (UP) { await uploadFile(fl); store.set('contest', { at: Date.now(), video: true }); }
+      f.hidden = true; $('#ctDone').hidden = false; $('#ctDone').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    } catch (x) {
+      btn.disabled = false;
+      if (up) { btn.textContent = 'إكمال رفع الفيديو'; err.textContent = (ERR[x.message] || 'انقطع الاتصال أثناء الرفع.') + ' مشاركتك مسجّلة، اضغط «إكمال رفع الفيديو» ليكمل من حيث توقف.'; }
+      else sendErr(err);
+    }
   });
 }
 

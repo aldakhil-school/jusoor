@@ -333,3 +333,16 @@ a.vcard:hover{transform:translateY(-3px)}
 .tabbar a{font-size:13.5px}
 .pc-more{margin-top:28px}
 .pc-more .sec-h{margin-top:0}
+
+/* إرفاق فيديو المسابقة */
+.file-hidden{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.q>label.filepick,.filepick{display:flex;flex-direction:column;font-weight:400;margin-bottom:0;align-items:center;gap:6px;padding:22px 16px;border:2px dashed rgba(233,184,114,.55);border-radius:16px;background:rgba(233,184,114,.07);cursor:pointer;text-align:center}
+.filepick svg{width:34px;height:34px;fill:none;stroke:#f0c98a;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.filepick b{font-family:var(--f-display);font-size:16px;overflow-wrap:anywhere}
+.filepick small{color:var(--muted);font-size:13.5px}
+#ct-file:focus-visible+.filepick,.filepick:focus-within{outline:3px solid var(--b)}
+.q.miss .filepick{border-color:var(--err)}
+.upwrap{margin-top:16px}
+.upbar{height:12px;border-radius:7px;background:rgba(255,255,255,.08);overflow:hidden}
+.upbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--s2),var(--s));transition:width .4s}
+.uptxt{font-size:14.5px;margin-top:8px;font-variant-numeric:tabular-nums}
