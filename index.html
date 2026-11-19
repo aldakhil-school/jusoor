@@ -16,7 +16,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=Readex+Pro:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="assets/app.css?v=7">
+<link rel="stylesheet" href="assets/app.css?v=10">
 <link rel="icon" href="assets/moe-logo.png">
 </head>
 <body>
@@ -30,8 +30,8 @@
     </a>
     <nav class="nav" aria-label="أقسام الموقع">
       <a href="#home" data-nav="home">الرئيسية</a>
-      <a href="#rihla" data-nav="rihla">رحلتك في جسور</a>
-      <a href="#climate" data-nav="climate">مقياس المناخ</a>
+      <a href="#rihla" data-nav="next" class="go-next">مهمتي</a>
+      <a href="#more" data-nav="more">المزيد</a>
     </nav>
     <a class="jmark" href="#home" aria-label="مبادرة جسور ١٤٤٨هـ">
       <svg viewBox="0 0 64 32" aria-hidden="true"><path d="M3 24Q32-6 61 24" fill="none" stroke="url(#jg)" stroke-width="3.2" stroke-linecap="round"/><path d="M2 24h60" stroke="#fff" stroke-opacity=".85" stroke-width="3" stroke-linecap="round"/><path d="M14 24V13M24 24V7M32 24V5M40 24V7M50 24V13" stroke="#fff" stroke-opacity=".35" stroke-width="1.6"/><defs><linearGradient id="jg"><stop offset="0" stop-color="#6ec6e6"/><stop offset="1" stop-color="#3ecf8e"/></linearGradient></defs></svg>
@@ -42,8 +42,8 @@
 
 <nav class="tabbar" aria-label="التنقل السريع">
   <a href="#home" data-nav="home"><span data-ic="home"></span>الرئيسية</a>
-  <a href="#rihla" data-nav="rihla"><span data-ic="route"></span>رحلتك</a>
-  <a href="#climate" data-nav="climate"><span data-ic="chart"></span>المناخ</a>
+  <a href="#rihla" data-nav="next" class="go-next"><span data-ic="check"></span>مهمتي</a>
+  <a href="#more" data-nav="more"><span data-ic="board"></span>المزيد</a>
 </nav>
 
 <main>
@@ -56,7 +56,7 @@
         <h1 class="grad">جسور</h1>
         <div class="tag">نبني علاقات.. <span class="g">نصنع مستقبلاً</span></div>
         <p class="lead">نعمل معاً من أجل مستقبل أبنائنا. ابدأ رحلتك في جسور من جوالك: شاهد الفيديو وأجب عن أسئلته، ثم شارك برأيك واحتياجك، واحصل في النهاية على بطاقة «شريك جسور».</p>
-        <div class="cta"><a class="btn" href="#rihla" id="heroGo">ابدأ رحلتك في جسور</a></div>
+        <div class="next-box"><span class="next-lbl">خطوتك التالية</span><a class="btn big-btn" href="#rihla" id="heroGo">ابدأ رحلتك في جسور</a><span class="next-sub" id="heroSub">خمس دقائق: فيديو قصير وأسئلة سريعة</span></div>
         <div class="demo" id="demoNote" hidden>وضع التجربة: الموقع لم يُربط بعد بجدول الردود، والأرقام المعروضة للتوضيح فقط.</div>
       </div>
       <div class="card bar bridge-card" aria-label="الجسر الحي">
@@ -69,6 +69,10 @@
       </div>
     </div>
 
+    <a class="card bar c3 banner" href="#shura" data-phase="2-2"><span class="tile t3" data-ic="users"></span><div><b>الاستطلاع التشاركي</b><small>صوّت على أولوياتنا ومشروعنا المجتمعي واسم المبادرة</small></div><span class="btn sm">شارك برأيك</span></a>
+    <a class="card bar c2 banner" href="#videos" data-phase="3-3"><span class="tile t2" data-ic="video"></span><div><b>فيديوهات التوجيه الأسري</b><small>فيديو جديد يصلك تباعاً، وفي كل فيديو ثلاثة أسئلة</small></div><span class="btn sm">شاهد الآن</span></a>
+    <a class="card bar banner" href="#climate" data-phase="4-4"><span class="tile" data-ic="chart"></span><div><b>القياس البعدي للمناخ المدرسي</b><small>١٦ عبارة لنعرف أثر جسور. دقيقتان فقط</small></div><span class="btn sm">شارك برأيك</span></a>
+    <a class="card bar c3 banner" href="#athar" data-phase="5"><span class="tile t3" data-ic="star"></span><div><b>شكراً لشركاء جسور</b><small>اطّلع على أثر شراكتنا هذا العام</small></div><span class="btn sm">أثر جسور</span></a>
     <div class="sec-h"><h2>رحلتك في جسور</h2></div>
     <a class="card bar journey-cta" href="#rihla">
       <div class="jc-steps">
@@ -96,12 +100,18 @@
     <div class="sec-h"><h2>الفصول الأعلى مشاركةً</h2></div>
     <div class="card board"><table id="board"></table><div class="empty" id="boardEmpty">تظهر الفصول هنا بعد أول المشاركات. شارك ليظهر فصل ابنك في المقدمة.</div></div>
 
-    <div class="sec-h"><h2>قريباً في جسور</h2></div>
-    <div class="soon">
+    <div class="sec-h" data-phase="1-2"><h2>قريباً في جسور</h2></div>
+    <div class="soon" data-phase="1-2">
       <div class="card"><span class="tile t2" data-ic="video"></span><h3>فيديوهات التوجيه الأسري</h3><p>فيديوهات قصيرة عن القدرات، والتحصيلي، والمسارات، وSTEP.</p></div>
       <div class="card"><span class="tile" data-ic="pulse"></span><h3>نبض الأسبوع</h3><p>سؤال واحد كل أسبوع، والنتيجة فوراً.</p></div>
       <div class="card"><span class="tile t3" data-ic="briefcase"></span><h3>بنك خبرات الآباء</h3><p>شارك خبرتك المهنية مع طلابنا.</p></div>
       <div class="card"><span class="tile t3" data-ic="camera"></span><h3>استثمار لا يُقدّر بثمن</h3><p>مسابقة فيديو لأولياء الأمور.</p></div>
+    </div>
+    <div class="sec-h" data-phase="3"><h2>شارك في جسور</h2></div>
+    <div class="acts" data-phase="3">
+      <a class="card bar c2 act" href="#videos"><span class="tile t2" data-ic="video"></span><h3>فيديوهات التوجيه الأسري</h3><p>القدرات، والتحصيلي، والمسارات، وSTEP. في كل فيديو ثلاثة أسئلة تُحتسب مشاركتك.</p><span class="go">شاهد ←</span></a>
+      <a class="card bar act" href="#shariq"><span class="tile" data-ic="pulse"></span><h3>نبض الأسبوع</h3><p>سؤال واحد، والنتيجة تظهر لك فوراً.</p><span class="go">أجب ←</span></a>
+      <a class="card bar c3 act" href="#khibra"><span class="tile t3" data-ic="briefcase"></span><h3>بنك خبرات الآباء</h3><p>شارك خبرتك المهنية مع طلابنا.</p><span class="go">سجّل خبرتك ←</span></a>
     </div>
   </div>
 </section>
@@ -177,7 +187,28 @@
     <label class="opt pc-name"><input type="checkbox" id="pcName"><span>إظهار اسم ابني في البطاقة</span></label>
     <div class="cta pc-btns"><button class="btn" type="button" id="pcShare"><span data-ic="share"></span>مشاركة البطاقة</button><button class="btn ghost" type="button" id="pcSave"><span data-ic="download"></span>حفظ الصورة</button></div>
     <p class="muted" style="text-align:center;font-size:14px;margin-top:14px">البطاقة تُصنع على جهازك، ولا تُرسل إلى أي مكان.</p>
+    <div class="pc-more" data-phase="3">
+      <div class="sec-h"><h2>أكمل جسرك الشخصي</h2></div>
+      <div class="card bar pbridge"></div>
+    </div>
     <div class="cta" style="justify-content:center;margin-top:18px"><a class="btn ghost" href="#home">شاهد الجسر الحي</a></div>
+  </div>
+</section>
+<!-- ═════════ المزيد: كل الصفحات بكلمات واضحة ═════════ -->
+<section class="page" id="p-more">
+  <div class="wrap form-wrap">
+    <div class="form-head"><span class="eyebrow">مبادرة جسور</span><h1>كل ما في جسور</h1><p class="lead">اختر ما تريد. وإذا لم تعرف من أين تبدأ، اضغط «مهمتي» في الأسفل.</p></div>
+    <div class="more-list">
+      <a class="card more-row" href="#rihla"><span class="tile" data-ic="route"></span><div><b>رحلتك في جسور</b><small>فيديو تعريفي، ورأيك في المدرسة، واحتياجات أسرتك</small></div><i>‹</i></a>
+      <a class="card more-row" href="#videos" data-phase="3"><span class="tile t2" data-ic="video"></span><div><b>فيديوهات التوجيه الأسري</b><small>خمسة فيديوهات قصيرة تبني بها جسرك الشخصي</small></div><i>‹</i></a>
+      <a class="card more-row" href="#card"><span class="tile t3" data-ic="star"></span><div><b>بطاقة شريك جسور</b><small>تظهر بعد إكمال الرحلة، وتصير ذهبية بإكمال الفيديوهات</small></div><i>‹</i></a>
+      <a class="card more-row" href="#shariq" data-phase="3"><span class="tile" data-ic="pulse"></span><div><b>سؤال الأسبوع وتحدي البيت</b><small>سؤال واحد، والنتيجة تظهر فوراً</small></div><i>‹</i></a>
+      <a class="card more-row" href="#contest" data-phase="3"><span class="tile t3" data-ic="camera"></span><div><b>مسابقة «استثمار لا يُقدّر بثمن»</b><small>فيديو قصير عن دعمك لابنك، وشهادة شكر لكل مشارك</small></div><i>‹</i></a>
+      <a class="card more-row" href="#khibra" data-phase="3"><span class="tile t2" data-ic="briefcase"></span><div><b>بنك خبرات الآباء</b><small>شارك خبرتك المهنية مع طلابنا</small></div><i>‹</i></a>
+      <a class="card more-row" href="#shura" data-phase="2-3"><span class="tile" data-ic="users"></span><div><b>الاستطلاع التشاركي</b><small>صوّت على أولويات المدرسة ومشروعها المجتمعي</small></div><i>‹</i></a>
+      <a class="card more-row" href="#climate"><span class="tile t2" data-ic="chart"></span><div><b>مقياس المناخ المدرسي</b><small>للطلاب والمعلمين والإداريين</small></div><i>‹</i></a>
+      <a class="card more-row" href="#athar" data-phase="4"><span class="tile t3" data-ic="star"></span><div><b>أثر جسور</b><small>أرقام شراكتنا هذا العام</small></div><i>‹</i></a>
+    </div>
   </div>
 </section>
 
@@ -188,7 +219,8 @@
     <div id="climateRoles">
       <div class="ql" style="font-weight:600">اختر فئتك:</div>
       <div class="roles">
-        <a class="card role" href="#rihla" data-r="parent"><span class="tile" data-ic="home"></span><b>ولي أمر</b><small>ضمن رحلتك في جسور</small></a>
+        <a class="card role" href="#rihla" data-r="parent" data-phase="1-3"><span class="tile" data-ic="home"></span><b>ولي أمر</b><small>ضمن رحلتك في جسور</small></a>
+        <button class="card role" data-role="parent" data-r="parent" data-phase="4"><span class="tile" data-ic="home"></span><b>ولي أمر</b><small>١٦ عبارة</small></button>
         <button class="card role" data-role="student" data-r="student"><span class="tile t2" data-ic="cap"></span><b>طالب</b><small>١٦ عبارة</small></button>
         <button class="card role" data-role="teacher" data-r="staff"><span class="tile t3" data-ic="board"></span><b>معلم</b><small>١٦ عبارة</small></button>
         <button class="card role" data-role="admin" data-r="staff"><span class="tile" data-ic="briefcase"></span><b>إداري</b><small>١٦ عبارة</small></button>
@@ -209,6 +241,106 @@
     </div>
   </div>
 </section>
+
+<!-- ═════════ مكتبة الفيديوهات (المرحلة ٣) ═════════ -->
+<section class="page" id="p-videos" data-phase="3">
+  <div class="wrap">
+    <div id="vlibWrap">
+      <div class="form-head"><span class="eyebrow">التوجيه الأسري</span><h1>مكتبة فيديوهات جسور</h1>
+        <p class="lead">فيديوهات قصيرة لأولياء الأمور، في كل فيديو ثلاثة أسئلة تظهر داخله. مشاهدتك وإجابتك تُحتسب مشاركةً في تعلّم ابنك.</p>
+        <p class="muted" id="vlibStat" style="margin-top:8px"></p></div>
+      <div class="card bar pbridge" id="myBridge"></div>
+      <div class="vlib" id="vlib"></div>
+    </div>
+    <div class="form-wrap" id="vone" hidden></div>
+  </div>
+</section>
+<!-- ═════════ شارك: نبض الأسبوع والمسابقة وبنك الخبرات (المرحلة ٣) ═════════ -->
+<section class="page" id="p-shariq" data-phase="3">
+  <div class="wrap">
+    <div class="form-head"><span class="eyebrow">شارك في جسور</span><h1>صوتك وخبرتك يبنيان الجسر</h1></div>
+    <div class="hub">
+      <div class="card bar pulse-card"><span class="eyebrow">نبض الأسبوع</span><div id="pulse"></div></div>
+      <div style="display:grid;gap:16px">
+        <a class="card bar c3 act" href="#contest"><span class="tile t3" data-ic="camera"></span><h3>استثمار لا يُقدّر بثمن</h3><p>فيديو قصير عن دعمك لابنك، وشهادة شكر إلكترونية لكل مشارك.</p><span class="go">التفاصيل والتسجيل ←</span></a>
+        <a class="card bar c2 act" href="#khibra"><span class="tile t2" data-ic="briefcase"></span><h3>بنك خبرات الآباء</h3><p>لقاء مهني قصير، أو فيديو عن مهنتك، أو إرشاد طالب.</p><span class="go">سجّل خبرتك ←</span></a>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ═════════ المسابقة ═════════ -->
+<section class="page" id="p-contest" data-phase="3">
+  <div class="wrap form-wrap">
+    <a class="back" href="#shariq">→ شارك</a>
+    <div class="form-head"><span class="eyebrow">مسابقة جسور لأولياء الأمور</span><h1>استثمار لا يُقدّر بثمن</h1>
+      <p class="lead">صوّر فيديو قصيراً (من دقيقة إلى دقيقتين) تحكي فيه كيف تدعم ابنك في جانب أو أكثر: الدراسي، أو الاجتماعي، أو العاطفي، أو الأخلاقي. يكفي التصوير بالجوال بصوت واضح، دون موسيقى أو محتوى منقول، ولا يُنشر أي فيديو إلا بموافقتك. لكل مشارك شهادة شكر إلكترونية، ويُكرَّم أفضل ثلاثة فيديوهات.</p>
+      <p class="muted" id="ctDeadline" style="margin-top:8px"></p></div>
+    <div class="card bar c3 panel" id="ctClosed" hidden><h2>التسجيل يُفتح قريباً</h2><p class="muted">نعلن موعد المسابقة في رسالة الفصل.</p></div>
+    <form class="card bar c3 panel" id="fContest" novalidate>
+      <h2>سجّل مشاركتك</h2>
+      <div id="ctStu"></div>
+      <div class="q" data-req="relation"><div class="ql">صلتك بالطالب</div><div class="opts" data-name="relation" data-opts="الأب|الأم|أخرى"></div></div>
+      <div class="q" data-req="aspects"><div class="ql">جوانب الدعم في الفيديو <span class="hint">(يمكن اختيار أكثر من إجابة)</span></div><div class="opts" data-name="aspects" data-multi="1" data-opts="الدراسي|الاجتماعي|العاطفي|الأخلاقي"></div></div>
+      <div class="q"><label for="ct-title">عنوان الفيديو <span class="hint">(اختياري)</span></label><input class="inp" id="ct-title" name="title" maxlength="120" autocomplete="off"></div>
+      <div class="q" data-req="consent"><div class="ql">هل توافق على عرض الفيديو المرفق في قنوات المدرسة إن اختير؟</div><div class="opts" data-name="consent" data-opts="نعم|لا"></div></div>
+      <div class="err" id="ctErr"></div>
+      <div class="form-nav"><span></span><button class="btn" type="submit">تسجيل المشاركة</button></div>
+    </form>
+    <div class="card bar panel done" id="ctDone" hidden><div class="plank"></div><h1>تم تسجيل مشاركتك</h1><p id="ctSubmit"></p><div class="cta"><a class="btn" href="#shariq">شارك</a></div></div>
+  </div>
+</section>
+<!-- ═════════ بنك خبرات الآباء ═════════ -->
+<section class="page" id="p-khibra" data-phase="3">
+  <div class="wrap form-wrap">
+    <a class="back" href="#shariq">→ شارك</a>
+    <div class="form-head"><span class="eyebrow">شراكة مع المجتمع</span><h1>بنك خبرات الآباء</h1>
+      <p class="lead">خبرتك المهنية تفتح لطلابنا أبواباً جديدة: لقاء مهني قصير حضوري أو عن بُعد، أو فيديو عن مهنتك، أو إرشاد طالب. سجّل خبرتك، ويتواصل معك الموجه الطلابي لترتيب الموعد.</p></div>
+    <form class="card bar c2 panel" id="fExpert" novalidate>
+      <div id="exStu"></div>
+      <div class="q" data-req="name"><label for="ex-name">اسم ولي الأمر</label><input class="inp" id="ex-name" name="name" maxlength="80" autocomplete="name"></div>
+      <div class="q" data-req="field"><label for="ex-field">المهنة ومجال الخبرة</label><input class="inp" id="ex-field" name="field" maxlength="120" placeholder="مثل: الطب، الهندسة، الأمن السيبراني، ريادة الأعمال"></div>
+      <div class="q"><label for="ex-job">جهة العمل <span class="hint">(اختياري)</span></label><input class="inp" id="ex-job" name="job" maxlength="120"></div>
+      <div class="q" data-req="types"><div class="ql">نوع المشاركة <span class="hint">(يمكن اختيار أكثر من إجابة)</span></div><div class="opts" data-name="types" data-multi="1" data-opts="لقاء حضوري|لقاء عن بُعد|فيديو قصير|إرشاد طالب|تحكيم مشروع"></div></div>
+      <div class="q"><div class="ql">الأوقات المناسبة لك <span class="hint">(اختياري)</span></div><div class="opts" data-name="times" data-multi="1" data-opts="الصباح|بعد الظهر|المساء"></div></div>
+      <div class="q"><label for="ex-phone">رقم التواصل <span class="hint">(اختياري، يبقى داخل المدرسة ولا يُنشر)</span></label><input class="inp" id="ex-phone" name="phone" inputmode="numeric" maxlength="14" placeholder="05xxxxxxxx" dir="ltr" style="text-align:right"></div>
+      <div class="err" id="exErr"></div>
+      <div class="form-nav"><span></span><button class="btn" type="submit">إرسال</button></div>
+      <div class="privacy"><span class="lk" data-ic="lock"></span>بياناتك تصل الموجه الطلابي ومنسق الشراكة فقط، ولا تظهر في الموقع.</div>
+    </form>
+    <div class="card bar panel done" id="exDone" hidden><div class="plank"></div><h1>شكراً لك</h1><p>وصلتنا خبرتك، ويتواصل معك الموجه الطلابي قريباً.</p><div class="cta"><a class="btn" href="#home">الرئيسية</a></div></div>
+  </div>
+</section>
+<!-- ═════════ الاستطلاع التشاركي (المرحلة ٢) ═════════ -->
+<section class="page" id="p-shura" data-phase="2-3">
+  <div class="wrap form-wrap">
+    <div class="form-head"><span class="eyebrow">التخطيط معاً</span><h1>الاستطلاع التشاركي</h1>
+      <p class="lead">بديل الورشة الحضورية: صوّت في دقيقة على أولويات مدرستنا، والمشروع المجتمعي الثاني، واسم المبادرة. ونعتمد النتائج في لقاء قصير مع ممثلي الأسر والطلاب والمعلمين.</p></div>
+    <form class="card bar c3 panel" id="fShura" novalidate>
+      <div class="q" data-req="role"><div class="ql">الفئة</div><div class="opts" data-name="role" data-opts="ولي أمر|طالب|معلم|إداري"></div></div>
+      <div class="q" data-req="goal"><div class="ql">أي الأهداف الثلاثة أهم لك؟</div><div class="opts" id="shGoal" data-name="goal" data-opts=""></div></div>
+      <div class="q" data-req="videos"><div class="ql">أي فيديوهات التوجيه الأسري تريدها أولاً؟ <span class="hint">(يمكن اختيار أكثر من إجابة)</span></div><div class="opts" id="shVid" data-name="videos" data-multi="1" data-opts=""></div></div>
+      <div class="q" data-req="project"><div class="ql">اختر المشروع المجتمعي الثاني بمشاركة الطلاب والأسر</div><div class="opts" id="shProj" data-name="project" data-opts=""></div>
+        <input class="inp" id="sh-other" name="other" maxlength="200" placeholder="اقتراحك أو جهة تقترح الشراكة معها (اختياري)" style="margin-top:10px"></div>
+      <div class="q" data-req="amn"><div class="ql">هل تشارك في مشروع «محيط آمن» لتنظيم الحركة عند المدرسة؟</div><div class="opts" data-name="amn" data-opts="نعم|ربما|لا"></div></div>
+      <div class="q row2"><div data-req="day"><div class="ql">أنسب يوم لمجلس الآباء الإلكتروني</div><div class="opts" data-name="day" data-opts="الأحد|الاثنين|الثلاثاء|الأربعاء"></div></div>
+        <div data-req="time"><div class="ql">والوقت</div><div class="opts" data-name="time" data-opts="بعد المغرب|بعد العشاء"></div></div></div>
+      <div class="q" data-req="name"><div class="ql">ما اسم المبادرة الأنسب؟</div><div class="opts" id="shName" data-name="name" data-opts=""></div></div>
+      <div class="q"><label for="sh-idea">اقتراحك لنجاح المبادرة <span class="hint">(اختياري)</span></label><textarea class="inp" id="sh-idea" name="idea" rows="3" maxlength="1000"></textarea></div>
+      <div class="err" id="shErr"></div>
+      <div class="form-nav"><span></span><button class="btn" type="submit">إرسال</button></div>
+      <div class="privacy"><span class="lk" data-ic="lock"></span>لا نطلب اسمك، وتُعرض النتائج مجمّعة فقط.</div>
+    </form>
+    <div class="card bar panel done" id="shDone" hidden><div class="plank"></div><h1>شكراً لك</h1><p>رأيك جزء من خطة جسور. نعلن النتائج بعد اعتمادها.</p><div class="cta"><a class="btn" href="#home">الرئيسية</a></div></div>
+  </div>
+</section>
+<!-- ═════════ أثر جسور (المرحلة ٤-٥) ═════════ -->
+<section class="page" id="p-athar" data-phase="4">
+  <div class="wrap">
+    <div class="form-head"><span class="eyebrow">مبادرة جسور ١٤٤٨هـ</span><h1>أثر جسور</h1><p class="lead">أرقام شراكتنا هذا العام بين المدرسة والأسرة والمجتمع، مجمّعة دون أسماء.</p></div>
+    <div class="athar" id="athar"></div>
+    <div id="honor" hidden><div class="sec-h"><h2>شكر وتقدير</h2></div><ul class="honor" id="honorList"></ul></div>
+  </div>
+</section>
 </main>
 
 <footer>
@@ -225,8 +357,9 @@
   </div>
 </footer>
 
-<script src="config.js?v=7"></script>
+<script src="config.js?v=9"></script>
 <script src="assets/climate.js"></script>
-<script src="assets/app.js?v=10"></script>
+<script src="assets/phases.js?v=3"></script>
+<script src="assets/app.js?v=13"></script>
 </body>
 </html>
