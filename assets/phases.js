@@ -126,7 +126,14 @@ function openVideo(id) {
 }
 
 /* ══════════ نبض الأسبوع (المرحلة ٣) ══════════ */
-const PULSE = (C.pulse || []).find(p => p.id === C.pulseNow);
+// سؤال الأسبوع يتغيّر وحده كل أحد بتوقيت الرياض، بدءاً من C.pulseStart (أحد الأسبوع الأول). C.pulseNow إن عُبّئ يثبّت سؤالاً بعينه.
+function pulseWeek() {
+  const L = C.pulse || []; if (C.pulseNow) return L.find(p => p.id === C.pulseNow);
+  if (!C.pulseStart || !L.length) return null;
+  const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Riyadh' })), d0 = new Date(C.pulseStart + 'T00:00:00');
+  const i = Math.floor((now - d0) / 6048e5); return i < 0 ? null : L[Math.min(i, L.length - 1)];
+}
+const PULSE = pulseWeek();
 async function pulseBox() {
   const box = $('#pulse'); if (!box) return;
   if (!PULSE) { box.innerHTML = '<p class="muted">يصل سؤال الأسبوع قريباً.</p>'; return; }
@@ -147,6 +154,67 @@ async function pulseRes(justNow) {
     + `<p class="muted" style="font-size:13px;margin-top:8px">شكراً لك. ${tot ? `النتيجة من ${AR(tot)} إجابة، وتتحدّث كل دقيقتين.` : 'تظهر النتيجة بعد أول الإجابات.'}</p>`;
 }
 
+/* ══════════ شهادة الشكر (تُرسم في جهاز ولي الأمر فور اكتمال رفع الفيديو، ولا تمرّ بأي خادم) ══════════ */
+const loadImg = src => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
+async function makeCert(c) {
+  await Promise.all(['700 96px "Readex Pro"', '600 40px "Readex Pro"', '500 36px "IBM Plex Sans Arabic"', '400 30px "IBM Plex Sans Arabic"'].map(f => document.fonts.load(f).catch(() => {}))); await document.fonts.ready.catch(() => {});
+  const W = 1754, H = 1240, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d'); x.direction = 'rtl';
+  const mom = c.relation === 'الأم', NAVY = '#0e3a4f', INK = '#23414f', GOLD = '#c8964f';
+  x.fillStyle = '#fbf8f1'; x.fillRect(0, 0, W, H);
+  // زخرفة نقطية خفيفة وإطار مزدوج
+  x.fillStyle = 'rgba(14,58,79,.045)'; for (let i = 30; i < W; i += 30) for (let j = 30; j < H; j += 30) { x.beginPath(); x.arc(i, j, 1.3, 0, 7); x.fill(); }
+  x.strokeStyle = NAVY; x.lineWidth = 10; x.strokeRect(34, 34, W - 68, H - 68);
+  x.strokeStyle = GOLD; x.lineWidth = 3; x.strokeRect(58, 58, W - 116, H - 116);
+  [[58, 58], [W - 58, 58], [58, H - 58], [W - 58, H - 58]].forEach(([a, b]) => { x.fillStyle = GOLD; x.beginPath(); x.moveTo(a, b - 16); x.lineTo(a + 16, b); x.lineTo(a, b + 16); x.lineTo(a - 16, b); x.fill(); });
+  let g = x.createLinearGradient(0, 0, W, 0); g.addColorStop(0, '#e9b872'); g.addColorStop(.5, '#6ec6e6'); g.addColorStop(1, '#3ecf8e'); x.fillStyle = g; x.fillRect(W / 2 - 300, 58, 600, 8);
+  // الهوية
+  x.textAlign = 'right';
+  try { const logo = await loadImg('assets/moe-logo.png'); const lh = 120, lw = lh * logo.width / logo.height; x.drawImage(logo, W - 130 - lw, 110, lw, lh);
+    x.fillStyle = 'rgba(14,58,79,.25)'; x.fillRect(W - 130 - lw - 30, 115, 2, lh - 10);
+    x.fillStyle = NAVY; x.font = '600 40px "Readex Pro"'; x.fillText(C.school || 'ثانوية عبدالرحمن الداخل', W - 130 - lw - 58, 166);
+    x.fillStyle = '#5b7a88'; x.font = '400 28px "IBM Plex Sans Arabic"'; x.fillText('الإدارة العامة للتعليم بمحافظة جدة', W - 130 - lw - 58, 210); } catch {}
+  x.textAlign = 'left'; x.fillStyle = NAVY; x.font = '600 34px "Readex Pro"'; x.fillText('مبادرة جسور', 130, 160);
+  x.fillStyle = '#5b7a88'; x.font = '400 26px "IBM Plex Sans Arabic"'; x.fillText('نبني علاقات.. نصنع مستقبلاً', 130, 202);
+  // العنوان
+  x.textAlign = 'center';
+  x.fillStyle = NAVY; x.font = '700 96px "Readex Pro"'; x.fillText('شهادة شكر وتقدير', W / 2, 375);
+  x.fillStyle = GOLD; x.fillRect(W / 2 - 90, 422, 180, 4);
+  // النص
+  x.fillStyle = INK; x.font = '400 36px "IBM Plex Sans Arabic"';
+  x.fillText('تتقدّم إدارة ' + (C.school || 'ثانوية عبدالرحمن الداخل') + ' بالشكر والتقدير إلى', W / 2, 490);
+  x.fillStyle = '#5b7a88'; x.font = '500 34px "IBM Plex Sans Arabic"'; x.fillText(mom ? 'الأم الفاضلة' : c.relation === 'الأب' ? 'الأب الفاضل' : 'ولي الأمر الفاضل', W / 2, 565);
+  let nf = 84; const name = String(c.parent || '').trim(); do { x.font = `700 ${nf}px "Readex Pro"`; nf -= 4; } while (x.measureText(name).width > W - 420 && nf > 44);
+  g = x.createLinearGradient(W / 2 - 400, 0, W / 2 + 400, 0); g.addColorStop(0, '#0e6e74'); g.addColorStop(1, NAVY); x.fillStyle = g; x.fillText(name, W / 2, 665);
+  x.fillStyle = INK; x.font = '500 36px "IBM Plex Sans Arabic"';
+  x.fillText((mom ? 'والدة الطالب: ' : 'ولي أمر الطالب: ') + String(c.student || '').trim() + (c.grade ? ' – الصف ' + c.grade : ''), W / 2, 745);
+  x.font = '400 36px "IBM Plex Sans Arabic"';
+  x.fillText(`على ${mom ? 'مشاركتها' : 'مشاركته'} في مسابقة «استثمار لا يُقدّر بثمن» ضمن مبادرة جسور،`, W / 2, 815);
+  x.fillText(`و${mom ? 'حرصها على دعم ابنها' : 'حرصه على دعم ابنه'} وتشجيعه، سائلين الله ${mom ? 'لها' : 'له'} التوفيق والسداد.`, W / 2, 870);
+  // جسر صغير زخرفي
+  const dk = 1010, x0 = W / 2 - 150, sp = 100; ['#3ecf8e', '#6ec6e6', '#e9b872'].forEach((col, k) => { x.strokeStyle = col; x.lineWidth = 5; x.lineCap = 'round'; x.beginPath(); x.moveTo(x0 + k * sp, dk); x.quadraticCurveTo(x0 + k * sp + sp / 2, dk - 70, x0 + (k + 1) * sp, dk); x.stroke(); });
+  x.fillStyle = 'rgba(14,58,79,.35)'; x.fillRect(x0 - 10, dk, 320, 4);
+  // التاريخ والتوقيع
+  let date = ''; try { date = new Intl.DateTimeFormat('ar-SA-u-ca-islamic-umalqura-nu-arab', { day: 'numeric', month: 'long', year: 'numeric' }).format(c.at || Date.now()); } catch {}
+  x.textAlign = 'right'; x.fillStyle = '#5b7a88'; x.font = '400 28px "IBM Plex Sans Arabic"'; x.fillText('التاريخ', W - 170, 1060);
+  x.fillStyle = INK; x.font = '500 32px "IBM Plex Sans Arabic"'; x.fillText(date, W - 170, 1110);
+  x.textAlign = 'center'; x.fillStyle = '#5b7a88'; x.font = '400 28px "IBM Plex Sans Arabic"'; x.fillText('مدير المدرسة', 330, 1060);
+  x.fillStyle = INK; x.font = '600 34px "Readex Pro"'; x.fillText('أ. خالد الرايقي', 330, 1112);
+  return new Promise(r => cv.toBlob(r, 'image/png'));
+}
+async function showCert(c) {
+  const box = $('#ctCert'); if (!box || !c || !c.parent) return;
+  box.hidden = false; const img = $('#ctCertImg'); let blob = null;
+  try { blob = await makeCert(c); } catch { box.hidden = true; return; }
+  if (img.dataset.url) URL.revokeObjectURL(img.dataset.url); img.src = img.dataset.url = URL.createObjectURL(blob);
+  const fname = 'شهادة-شكر-جسور.png';
+  $('#ctCertSave').onclick = async () => {
+    const file = new File([blob], fname, { type: 'image/png' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'شهادة شكر – مبادرة جسور' }); return; } catch (e) { if (e && e.name === 'AbortError') return; } }
+    const a = document.createElement('a'); a.href = img.dataset.url; a.download = fname; document.body.appendChild(a); a.click(); a.remove();
+  };
+}
+
 /* ══════════ المسابقة (المرحلة ٣) ══════════ */
 function contestPage() {
   const f = $('#fContest'); if (!f || f.dataset.ready) return; f.dataset.ready = 1;
@@ -156,11 +224,11 @@ function contestPage() {
   if (!k.open) { f.hidden = true; $('#ctClosed').hidden = false; return; }
   const UP = k.upload !== false, MAX = (k.maxMB || 100) * 1048576, fileIn = $('#ct-file');
   if (!UP) { $('#ctFileQ').remove(); $('#ctBtn').textContent = 'تسجيل المشاركة'; }
-  else { $('#ctSubmit').textContent = 'وصلنا الفيديو، شكراً لك. تصلك شهادة الشكر الإلكترونية بعد مراجعته.'; $('#ctDoneH').textContent = 'وصلت مشاركتك والفيديو'; }
+  else $('#ctDoneH').textContent = 'وصلت مشاركتك والفيديو';
   studentArea($('#ctStu'), 'ct'); buildOpts(f);
-  f.querySelectorAll('[data-ic]').forEach(e => e.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${api.IC[e.dataset.ic] || ''}</svg>`);
+  $$('#p-contest [data-ic]').forEach(e => e.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true">${api.IC[e.dataset.ic] || ''}</svg>`);
   const prev = store.get('contest', null); // من سجّل ولم يكتمل رفع الفيديو يرجع له النموذج
-  if (prev && (prev.video || !UP)) { f.hidden = true; $('#ctDone').hidden = false; }
+  if (prev && (prev.video || !UP)) { f.hidden = true; $('#ctDone').hidden = false; if (prev.video) showCert(prev.cert); }
   const mb = b => AR((b / 1048576).toFixed(1)).replace('.', '٫') + ' ميجا';
   fileIn?.addEventListener('change', () => {
     const fl = fileIn.files[0]; $('#ctFileQ').classList.remove('miss'); $('#ctErr').textContent = '';
@@ -200,8 +268,10 @@ function contestPage() {
         else { prog(0, 'جارٍ تسجيل المشاركة…'); const r = await call({ form: 'contest', at: new Date().toISOString(), ...row }); if (!r.ok || !r.up) throw new Error(r.busy ? 'busy' : 'reg'); up = r.up; }
         keepFam(stu); store.set('contest', { at: Date.now(), video: false });
       }
-      if (UP) { await uploadFile(fl); store.set('contest', { at: Date.now(), video: true }); }
-      f.hidden = true; $('#ctDone').hidden = false; $('#ctDone').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      const cert = { parent: n.parent, relation: n.relation, student: stu.student, grade: stu.grade, at: Date.now() };
+      if (UP) { await uploadFile(fl); store.set('contest', { at: Date.now(), video: true, cert }); }
+      f.hidden = true; $('#ctDone').hidden = false; $('#ctDone').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (UP) showCert(cert);
     } catch (x) {
       btn.disabled = false;
       if (up) { btn.textContent = 'إكمال رفع الفيديو'; err.textContent = (ERR[x.message] || 'انقطع الاتصال أثناء الرفع.') + ' مشاركتك مسجّلة، اضغط «إكمال رفع الفيديو» ليكمل من حيث توقف.'; }
